@@ -16,6 +16,7 @@ namespace ClipManager
         public string creator_name { get; set; }
         public string created_at { get; set; }
         public string title { get; set; }
+        public string game_id { get; set; }
         public string game_name { get; set; }
     }
 
@@ -57,11 +58,13 @@ namespace ClipManager
             var options = LoadConfig();
             TwitchToken = options.Token;
 
-            GetUserInfo();
+            // GetUserInfo(); 
+            GetUserInfo("Coestar");
             var folder = Path.Combine(RootPath, "downloads");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-            var firstClip = GetFirstClip(Login);
+            // var firstClip = GetFirstClip(Login);
+            var firstClip = GetFirstClip("Coestar");
             if (firstClip.Count < 1)
             {
                 Console.WriteLine("No clips found");
@@ -100,7 +103,10 @@ namespace ClipManager
                         continue;
                     }
 
-                    var fileName = SanitizeFile($"v{clip.game_name} - {clip.title} by {clip.creator_name}-{clip.id}.mp4");
+                    GetGameApi(clip);
+
+                    var created = DateTime.Parse(clip.created_at);
+                    var fileName = SanitizeFile($"{clip.title} - {clip.game_name} by {clip.creator_name} on {created:yyyy-MM-dd} - {clip.id}.mp4");
                     var savePath = Path.Combine(folder, fileName);
                     try
                     {
@@ -133,6 +139,7 @@ namespace ClipManager
 
                 void del()
                 {
+                    /*
                     try
                     {
                         Console.Write($"Deleting {string.Join(',', deleteClips)}...");
@@ -144,6 +151,7 @@ namespace ClipManager
                         File.AppendAllText(Path.Combine(RootPath, "error.log"), $"{string.Join(',', deleteClips)} deleting failed: {ex.Message}" + Environment.NewLine);
                         Console.WriteLine("Failed.");
                     }
+                    */
                     deleteClips.Clear();
                 }
 
@@ -249,6 +257,27 @@ namespace ClipManager
             catch
             {
                 Console.WriteLine("There was a problem saving configuration");
+            }
+        }
+
+        static void GetGameApi(ClipInfo clip)
+        {
+            if (string.IsNullOrEmpty(clip.game_id))
+                return;
+
+            try
+            {
+                var http = new HttpClient();
+                http.DefaultRequestHeaders.Add("Client-ID", TwitchClientID);
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TwitchToken);
+
+                var res = http.GetStringAsync($"https://api.twitch.tv/helix/games?id={clip.game_id}").GetAwaiter().GetResult();
+                var jtok = JToken.Parse(res);
+                clip.game_name = jtok["data"][0]["name"].ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"[{DateTime.Now}] GetUserInfo failed.", ex);
             }
         }
 
