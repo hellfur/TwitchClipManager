@@ -58,13 +58,13 @@ namespace ClipManager
             var options = LoadConfig();
             TwitchToken = options.Token;
 
-            // GetUserInfo(); 
-            GetUserInfo("Coestar");
+            GetUserInfo(); 
+            // GetUserInfo("[specific user]");
             var folder = Path.Combine(RootPath, "downloads");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-            // var firstClip = GetFirstClip(Login);
-            var firstClip = GetFirstClip("Coestar");
+            var firstClip = GetFirstClip(Login);
+            // var firstClip = GetFirstClip("[specific user]");
             if (firstClip.Count < 1)
             {
                 Console.WriteLine("No clips found");
@@ -139,7 +139,6 @@ namespace ClipManager
 
                 void del()
                 {
-                    /*
                     try
                     {
                         Console.Write($"Deleting {string.Join(',', deleteClips)}...");
@@ -151,7 +150,6 @@ namespace ClipManager
                         File.AppendAllText(Path.Combine(RootPath, "error.log"), $"{string.Join(',', deleteClips)} deleting failed: {ex.Message}" + Environment.NewLine);
                         Console.WriteLine("Failed.");
                     }
-                    */
                     deleteClips.Clear();
                 }
 
