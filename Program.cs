@@ -16,6 +16,7 @@ namespace ClipManager
         public string creator_name { get; set; }
         public string created_at { get; set; }
         public string title { get; set; }
+        public string game_name { get; set; }
     }
 
     class Options
@@ -99,7 +100,7 @@ namespace ClipManager
                         continue;
                     }
 
-                    var fileName = SanitizeFile($"v{clip.view_count:00000000}[{clip.created_at}] {clip.title} by {clip.creator_name}-{clip.id}.mp4");
+                    var fileName = SanitizeFile($"v{clip.game_name} - {clip.title} by {clip.creator_name}-{clip.id}.mp4");
                     var savePath = Path.Combine(folder, fileName);
                     try
                     {
@@ -469,6 +470,7 @@ namespace ClipManager
                     title = edge.SelectToken("node.title")?.ToString(),
                     creator_name = edge.SelectToken("node.curator.login")?.ToString(),
                     created_at = edge.SelectToken("node.createdAt")?.ToString(),
+                    game_name = edge.SelectToken("node.game.name")?.ToString(),
                     view_count = edge.SelectToken("node.viewCount")?.ToObject<int>() ?? 0
                 });
             }
